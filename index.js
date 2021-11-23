@@ -11,7 +11,7 @@ const mongoose = require("mongoose");
 
 const url = "mongodb+srv://gustavo:Gustavo18@clustercliente.zrloi.mongodb.net/primeiraapi?retryWrites=true&w=majority"
 
-mongoose.connect(uri,{userNewUrlParser: true, useUnifiedTopologv: true });
+mongoose.connect(url,{useNewUrlParser: true, useUnifiedTopology: true });
 
 
 // Vamos criar a estrutura da tebela clientes com o comando de Schema
@@ -64,17 +64,33 @@ app.get("/api/cliente/",(req,res)=>{
 
 app.post("/api/cliente/cadastro",(req,res)=>{
     
-    res.send(`Os dados enviados foram ${req.body.nome}`);
+    const cliente = new Cliente(req.body);
+    cliente.save().then(()=>{
+         res.status(201).send({oninput:`Cliente cadastrado`})
+    })
+    .catch((erro)=>res.status(400).send({oninput:`Erro ao tentar cadastrar o cliente -> ${erro}`}))
+
 });
 
 app.put("/api/cliente/atualizar/:id",(req,res)=>{
+    Cliente.findByIdAndUpdate(req.params.id,req.body,(erro,dados)=>{
+      if(erro){
+        return res.status(400).send({output:`Erro ao tentar atualizar ->${erro}`});
+    }
+    res.status(200).send({output:`Dados atualizados`}); 
+})
 
-    res.send(`O id passado foi ${req.params.id}
-    e os dados ára atualizar são ${req.body}`);
 });
 
 app.delete("/api/cliente/apagar/:id",(req,res)=>{
-    res.send(`O id passado foi ${req.params.id}`);
+    Cliente.findByIdAndDelete(req.params.id,(erro,dados)=>{
+      if(erro){
+          return res.status(400).send({output:`Erro ao tentar apagar o cliente->${erro}`})
+      }
+      res.status(204).send({});
+    });
+
 });
 
 app.listen(3000,()=>console.log("Servidor online em http://localhost:3000"));
+
